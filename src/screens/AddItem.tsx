@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
+import React, { useState } from 'react';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
 import {
   Text,
   TextInput,
@@ -12,10 +12,12 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addRecipes } from '../API/RecipesApi';
 import { ScrollView } from 'react-native-gesture-handler';
 import { color } from '../utils/color';
 import { string } from '../constants/string';
+import { routes } from '../constants/routes';
 
 const AddItemScreen = () => {
   const [name, setName] = useState('');
@@ -25,12 +27,21 @@ const AddItemScreen = () => {
   const handleAddProduct = async () => {
     try {
       const payload = {
+        id: Date.now().toString(),
         name: name,
-        price: parseFloat(price),
+        price: Number(price),
         image: image,
       };
+      const existingData = await AsyncStorage.getItem('products');
+      const products = existingData ? JSON.parse(existingData) : [];
+      products.push(payload);
+      await AsyncStorage.setItem('products', JSON.stringify(products));
 
-      const data = await addRecipes(payload);
+      const data = await addRecipes({
+        ...payload,
+        image:
+          payload.image && payload.image.length > 0 ? payload.image[0] : null,
+      });
       console.log('Success:', data);
       Alert.alert(
         'Success',
@@ -58,7 +69,9 @@ const AddItemScreen = () => {
     });
 
     if (!result.didCancel && result.assets) {
-      const uris = result.assets.map(asset => asset.uri);
+      const uris = result.assets
+        .map(asset => asset.uri)
+        .filter((uri): uri is string => !!uri);
       setImage(uris);
     }
   };
@@ -67,6 +80,8 @@ const AddItemScreen = () => {
       <Text style={styles.label} onPress={() => navigation.goBack()}>
         {string.addItem.back}
       </Text>
+      <Text onPress={() => navigation.navigate(routes.users)}>User Data</Text>
+      <Text onPress={() => navigation.navigate(routes.carts)}>Carts Data</Text>
       <Text style={[styles.label, { textAlign: 'center' }]}>
         {string.addItem.title}
       </Text>
