@@ -1,121 +1,72 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Image,
-  ListRenderItem,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { fetchRecipesRequest } from '../redux/recipesSlice';
+import { RecipesType } from '../utils/globalType';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import {
-  ParamListBase,
-  useNavigation,
-  useFocusEffect,
-} from '@react-navigation/native';
+import ProductCard from '../components/ProductCard';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { color } from '../utils/color';
 import { routes } from '../constants/routes';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
-import { ActionItem } from '../utils/globalType';
-import { useAppDispatch } from '../utils/reduxUtil';
 
 export default function Home() {
-  const [products, setProducts] = useState<ActionItem[]>([]);
-  const [page, setPage] = useState(1);
-
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch();
+  const [currentPage, setCurrentPage] = useState(1);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  const limit = 10;
-  const { data, loading, error } = useSelector(
+  const { data, loading, error, total } = useSelector(
     (state: RootState) => state.recipes,
   );
-
+  const limit = 50;
+  console.log('all data======', data[51]);
   useEffect(() => {
-    dispatch(fetchRecipesRequest({ limit: limit, skip: 0 }));
-  }, [dispatch]);
+    const skip = (currentPage - 1) * limit;
 
-  const loadProducts = async () => {
-    try {
-      const storedProducts = await AsyncStorage.getItem('products');
+    dispatch(fetchRecipesRequest({ skip, limit }));
+  }, [currentPage, dispatch]);
 
-      if (storedProducts) {
-        try {
-          setProducts(JSON.parse(storedProducts));
-        } catch {
-          setProducts([]);
-        }
-      } else {
-        setProducts([]);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const renderItem = ({ item }: { item: RecipesType }) => {
+    return <ProductCard item={item} />;
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProducts();
-    }, []),
-  );
-  const mergedData = [...products, ...data];
-  const renderItem: ListRenderItem<ActionItem> = ({ item }) => {
-    return (
-      <TouchableOpacity style={styles.cardVertical}>
-        <Image source={{ uri: item.image }} style={styles.image} />
-        <View style={styles.titleRow}>
-          <Text numberOfLines={1} style={styles.title}>
-            {item?.name}
-          </Text>
-          <Text style={styles.price}>
-            {item?.caloriesPerServing ?? item.price}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  if (loading && data.length === 0) {
+  if (loading && data?.length === 0) {
     return <ActivityIndicator size="large" style={styles.loading} />;
   }
 
   if (error) return <Text>{error}</Text>;
 
-  const loadMore = () => {
-    if (loading) return;
-
-    const nextPage = page + 1;
-    setPage(nextPage);
-
-    const skip = (nextPage - 1) * limit;
-
-    dispatch(fetchRecipesRequest({ limit: limit, skip: skip }));
+  const onEndReached = () => {
+    if (!loading && data.length < total) {
+      setCurrentPage(prev => prev + 1);
+    }
   };
+
   const footerComponent = () => {
     return loading ? <ActivityIndicator size="small" /> : null;
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <SafeAreaView>
       <FlatList
-        data={mergedData}
+        data={data}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.container}
         numColumns={2}
         columnWrapperStyle={styles.column}
         showsVerticalScrollIndicator={false}
-        onEndReached={loadMore}
+        onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
+        initialNumToRender={10}
         ListFooterComponent={footerComponent}
       />
-
       <TouchableOpacity
         style={styles.stickyButton}
         onPress={() => navigation.navigate(routes.addItem)}
@@ -127,10 +78,17 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  mainContainer: { flex: 1 },
   container: {
     marginHorizontal: 25,
-    gap: 20,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  item: {
+    padding: 10,
+    borderBottomWidth: 1,
   },
   column: {
     gap: 10,
@@ -143,40 +101,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
+    backgroundColor: color.black,
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'blue',
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
   buttonText: {
     color: color.white,
     fontSize: 30,
     fontWeight: 'bold',
-  },
-  cardVertical: {
-    flex: 1,
-    height: RWidth(150),
-    width: RWidth(160),
-    backgroundColor: '#FFFFFF',
-    padding: RWidth(8),
-    borderRadius: RWidth(12),
-  },
-  image: {
-    height: RHeight(120),
-    resizeMode: 'stretch',
-    borderRadius: RWidth(12),
-  },
-  title: {
-    fontSize: RFont(14),
-    flex: 1,
-  },
-  price: {
-    color: '#009944',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
 });

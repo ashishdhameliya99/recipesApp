@@ -16,8 +16,8 @@ import { RecipesType } from '../utils/globalType';
 import { fetchTagsRequest } from '../redux/recipesSlice';
 
 export default function AllTags() {
-  const [selectedTag, setSelectedTag] = useState('View All');
   const dispatch = useDispatch();
+  const [selectedTag, setSelectedTag] = useState('View All');
 
   const { data, loading, error, tags, tagsLoading } = useSelector(
     (state: RootState) => state.recipes,
