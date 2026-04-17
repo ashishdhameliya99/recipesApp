@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
 import {
   Text,
   TextInput,
@@ -12,35 +12,25 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addRecipes } from '../API/RecipesApi';
-
+import { ScrollView } from 'react-native-gesture-handler';
 import { color } from '../utils/color';
 import { string } from '../constants/string';
-import { routes } from '../constants/routes';
 
 const AddItemScreen = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string[] | null>([]);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const handleAddProduct = async () => {
     try {
       const payload = {
-        id: Date.now().toString(),
         name: name,
-        price: Number(price),
+        price: parseFloat(price),
         image: image,
       };
-      const existingData = await AsyncStorage.getItem('products');
-      const products = existingData ? JSON.parse(existingData) : [];
-      products.push(payload);
-      await AsyncStorage.setItem('products', JSON.stringify(products));
 
-      const data = await addRecipes({
-        ...payload,
-        image: payload.image && payload.image.length > 0 ? payload.image : null,
-      });
+      const data = await addRecipes(payload);
       console.log('Success:', data);
       Alert.alert(
         'Success',
@@ -64,28 +54,18 @@ const AddItemScreen = () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 1,
-      selectionLimit: 1,
+      selectionLimit: 5,
     });
 
-    if (!result.didCancel && result.assets && result.assets.length > 0) {
-      const selectedImage = result.assets[0];
-      if (selectedImage.uri) {
-        setImage(selectedImage.uri);
-      } else {
-        setImage(null);
-      }
+    if (!result.didCancel && result.assets) {
+      const uris = result.assets.map(asset => asset.uri);
+      setImage(uris);
     }
   };
-  console.log('images', image);
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.label} onPress={() => navigation.goBack()}>
         {string.addItem.back}
-      </Text>
-      <Text onPress={() => navigation.navigate(routes.users)}>User Data</Text>
-      <Text onPress={() => navigation.navigate(routes.carts)}>Carts Data</Text>
-      <Text onPress={() => navigation.navigate(routes.video)}>
-        Video Download
       </Text>
       <Text style={[styles.label, { textAlign: 'center' }]}>
         {string.addItem.title}
@@ -111,13 +91,19 @@ const AddItemScreen = () => {
         <Text style={styles.buttonText}>{string.addItem.selectImage}</Text>
       </TouchableOpacity>
 
-      {image && (
-        <Image
-          source={{ uri: image }}
-          resizeMode="cover"
-          style={styles.selectedImage}
-        />
-      )}
+      <ScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 20 }}
+      >
+        {image?.map((uri, index) => (
+          <Image
+            key={index}
+            source={{ uri: String(uri) }}
+            style={styles.preview}
+          />
+        ))}
+      </ScrollView>
 
       <TouchableOpacity
         onPress={handleAddProduct}
@@ -162,7 +148,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  selectedImage: { height: 100, width: 100, marginTop: 20 },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,

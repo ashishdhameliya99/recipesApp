@@ -16,12 +16,15 @@ function* workGetRecipes(action: ReturnType<typeof fetchRecipesRequest>): any {
     const { limit, skip } = action.payload;
 
     const response = yield call(() =>
-      Api.get(`${recipes.getAll}?limit=${limit}&skip=${skip}`),
+      Api.get(recipes.getAll, {
+        params: { limit, skip },
+      }),
     );
 
     yield put(
       fetchRecipesSuccess({
         recipes: response.data.recipes,
+        total: response.data.total,
       }),
     );
   } catch (error: any) {
