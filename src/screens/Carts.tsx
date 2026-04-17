@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -20,41 +20,58 @@ import { fetchData } from '../redux/thunkAPI/thunkAction';
 const Users = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const dispatch = useAppDispatch();
-  const { carts, loading, error } = useSelector((state: RootState) => {
-    return state?.apiCarts;
-  });
-  console.log('cart page data====', carts);
+
+  const { carts, loading, error } = useSelector(
+    (state: RootState) => state.apiCarts,
+  );
+
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    dispatch(fetchData());
+    dispatch(fetchData(1));
   }, [dispatch]);
 
-  if (loading && carts?.length === 0) {
+  const loadMore = () => {
+    if (!loading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      dispatch(fetchData(nextPage));
+    }
+  };
+
+  const renderItem = ({ item }: { item: localCartsType }) => (
+    <TouchableOpacity style={styles.cardVertical}>
+      <Image source={{ uri: item?.thumbnail }} style={styles.image} />
+      <View style={styles.titleRow}>
+        <Text numberOfLines={1} style={styles.title}>
+          {item?.title}
+        </Text>
+        <Text style={styles.price}>{(item.total ?? 0).toFixed(2)}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  if (loading && carts.length === 0) {
     return <ActivityIndicator size="large" />;
   }
 
   if (error) return <Text>{error}</Text>;
-  const renderItemLocal = ({ item }: { item: localCartsType }) => {
-    return (
-      <TouchableOpacity style={styles.cardVertical}>
-        <Image source={{ uri: item?.thumbnail }} style={styles.image} />
-        <View style={styles.titleRow}>
-          <Text style={[styles.title]} ellipsizeMode="tail" numberOfLines={1}>
-            {item?.title}
-          </Text>
-          <Text style={styles.price}>{(item.total ?? 0).toFixed(2)}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+
   return (
     <SafeAreaView>
       <Text onPress={() => navigation.goBack()}>Back</Text>
+
       <FlatList
         data={carts}
-        renderItem={renderItemLocal}
+        renderItem={renderItem}
         contentContainerStyle={styles.container}
         numColumns={2}
         columnWrapperStyle={styles.column}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading ? <ActivityIndicator size="small" /> : null
+        }
       />
     </SafeAreaView>
   );

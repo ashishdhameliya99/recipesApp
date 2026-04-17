@@ -28,7 +28,7 @@ const recipesSlice = createSlice({
 
     fetchRecipesSuccess: (
       state,
-      action: PayloadAction<{ recipes: RecipesType[]; total: number }>,
+      action: PayloadAction<{ recipes: RecipesType[] }>,
     ) => {
       state.loading = false;
 
@@ -37,8 +37,6 @@ const recipesSlice = createSlice({
       } else {
         state.data = [...state.data, ...action.payload.recipes];
       }
-
-      state.total = action.payload.total;
     },
 
     fetchRecipesFailed: (state, action: PayloadAction<string>) => {

@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  ImageSourcePropType,
+  ListRenderItem,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,24 +24,22 @@ import { color } from '../utils/color';
 import { routes } from '../constants/routes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
+import { ActionItem } from '../utils/globalType';
 
 export default function Home() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [products, setProducts] = useState<ActionItem[]>([]);
+  const [page, setPage] = useState(1);
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
-  const { data, loading, error, total } = useSelector(
+  const limit = 10;
+  const { data, loading, error } = useSelector(
     (state: RootState) => state.recipes,
   );
 
-  const limit = 50;
-
   useEffect(() => {
-    const skip = (currentPage - 1) * limit;
-    dispatch(fetchRecipesRequest({ skip, limit }));
-  }, [currentPage, dispatch]);
+    dispatch(fetchRecipesRequest({ limit: limit, skip: 0 }));
+  }, [dispatch]);
 
   const loadProducts = async () => {
     try {
@@ -64,18 +64,18 @@ export default function Home() {
       loadProducts();
     }, []),
   );
-
   const mergedData = [...products, ...data];
-
-  const renderItem = ({ item }: any) => {
-    const imageUri =
-      Array.isArray(item?.image) && item.image.length > 0
-        ? item.image[0]
-        : item?.image;
+  console.log('all data=====', mergedData);
+  const renderItem: ListRenderItem<ActionItem> = ({ item }) => {
+    const imageSource =
+      typeof item?.image === 'string' &&
+      (item.image.startsWith('http') || item.image.startsWith('https'))
+        ? { uri: item.image }
+        : (item.image as ImageSourcePropType);
 
     return (
       <TouchableOpacity style={styles.cardVertical}>
-        <Image source={{ uri: imageUri }} style={styles.image} />
+        <Image source={imageSource} style={styles.image} />
         <View style={styles.titleRow}>
           <Text numberOfLines={1} style={styles.title}>
             {item?.name}
@@ -94,27 +94,31 @@ export default function Home() {
 
   if (error) return <Text>{error}</Text>;
 
-  const onEndReached = () => {
-    if (!loading && data.length < total) {
-      setCurrentPage(prev => prev + 1);
-    }
-  };
+  const loadMore = () => {
+    if (loading) return;
 
+    const nextPage = page + 1;
+    setPage(nextPage);
+
+    const skip = (nextPage - 1) * limit;
+
+    dispatch(fetchRecipesRequest({ limit: limit, skip: skip }));
+  };
   const footerComponent = () => {
     return loading ? <ActivityIndicator size="small" /> : null;
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.mainContainer}>
       <FlatList
         data={mergedData}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.container}
         numColumns={2}
         columnWrapperStyle={styles.column}
         showsVerticalScrollIndicator={false}
-        onEndReached={onEndReached}
+        onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={footerComponent}
       />
@@ -130,6 +134,7 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+  mainContainer: { flex: 1 },
   container: {
     marginHorizontal: 25,
     gap: 20,

@@ -1,6 +1,3 @@
-import { Action } from '@reduxjs/toolkit';
-import { ImageSourcePropType } from 'react-native';
-
 export interface RecipesState {
   loading: boolean;
   tagsLoading: boolean;
@@ -42,26 +39,27 @@ export interface AddRecipePayload {
 }
 
 export interface localRecipesType {
-  name: string;
-  price: number;
-  image: ImageSourcePropType;
+  image?: string;
   firstName?: string;
   lastName?: string;
 }
 export interface localCartsType {
   title: string;
-  total: number;
-  thumbnail: ImageSourcePropType;
+  total?: number;
+  id: number | string;
+  allProducts?: string[];
+  thumbnail?: string;
+  products?: string;
 }
+
 export interface fetchDataAction {
   payload: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
-  email: string;
 }
 
 export interface UserState {
@@ -84,11 +82,19 @@ export interface CartsState {
   loading: boolean;
   carts: carts[];
   error: string | null;
+  allProducts?: string[];
 }
 
 export interface carts {
-  id: number;
+  id: number | string;
   title: string;
   price: string;
-  thumbnail: string;
+  thumbnail?: string;
 }
+export type ActionItem = {
+  id: string | number;
+  image?: string;
+  name?: string;
+  price?: number;
+  caloriesPerServing?: number;
+};

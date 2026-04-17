@@ -6,15 +6,23 @@ import {
   fetchCartDataRequest,
   fetchCartDataSuccess,
 } from './action';
+import { localCartsType } from '../../utils/globalType';
 
-export const fetchData = () => {
+export const fetchData = (page: number = 1, limit: number = 10) => {
   return async (dispatch: Dispatch) => {
-    dispatch(fetchCartDataRequest());
     try {
-      const response = await Api.get(recipes.carts);
-      const allProducts = response.data.carts.flatMap(
+      dispatch(fetchCartDataRequest());
+
+      const skip = (page - 1) * limit;
+
+      const response = await Api.get(
+        `${recipes.carts}?limit=${limit}&skip=${skip}`,
+      );
+
+      const allProducts: localCartsType[] = response.data.carts.flatMap(
         (cart: any) => cart.products,
       );
+
       dispatch(fetchCartDataSuccess(allProducts));
     } catch (error: any) {
       dispatch(fetchCartDataFailure(error.message));

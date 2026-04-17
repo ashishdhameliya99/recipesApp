@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,27 +8,35 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ParamListBase, useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../redux/store';
 import { localRecipesType } from '../utils/globalType';
-import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
 import { fetchUsers } from '../redux/thunk/thunkAction';
+import { RootState, useAppDispatch } from '../redux/store';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const Users = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const [page, setPage] = useState(1);
   const dispatch = useAppDispatch();
   const { users, loading, error } = useSelector((state: RootState) => {
     return state?.apiReducer;
   });
-  console.log('user page data=======', users);
+  console.log('users data====', users);
   useEffect(() => {
-    dispatch(fetchUsers());
+    dispatch(fetchUsers(1));
   }, [dispatch]);
 
-  if (loading && users?.length === 0) {
+  const loadMore = () => {
+    if (!loading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      dispatch(fetchUsers(nextPage));
+    }
+  };
+  if (loading && users.length === 0) {
     return <ActivityIndicator size="large" />;
   }
 
@@ -53,8 +61,11 @@ const Users = () => {
         data={users}
         renderItem={renderItemLocal}
         contentContainerStyle={styles.container}
+        keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.column}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
       />
     </SafeAreaView>
   );

@@ -14,7 +14,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addRecipes } from '../API/RecipesApi';
-import { ScrollView } from 'react-native-gesture-handler';
+
 import { color } from '../utils/color';
 import { string } from '../constants/string';
 import { routes } from '../constants/routes';
@@ -22,7 +22,7 @@ import { routes } from '../constants/routes';
 const AddItemScreen = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [image, setImage] = useState<string[] | null>([]);
+  const [image, setImage] = useState<string | null>(null);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const handleAddProduct = async () => {
     try {
@@ -39,8 +39,7 @@ const AddItemScreen = () => {
 
       const data = await addRecipes({
         ...payload,
-        image:
-          payload.image && payload.image.length > 0 ? payload.image[0] : null,
+        image: payload.image && payload.image.length > 0 ? payload.image : null,
       });
       console.log('Success:', data);
       Alert.alert(
@@ -65,16 +64,19 @@ const AddItemScreen = () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 1,
-      selectionLimit: 5,
+      selectionLimit: 1,
     });
 
-    if (!result.didCancel && result.assets) {
-      const uris = result.assets
-        .map(asset => asset.uri)
-        .filter((uri): uri is string => !!uri);
-      setImage(uris);
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
+      const selectedImage = result.assets[0];
+      if (selectedImage.uri) {
+        setImage(selectedImage.uri);
+      } else {
+        setImage(null);
+      }
     }
   };
+  console.log('images', image);
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.label} onPress={() => navigation.goBack()}>
@@ -106,19 +108,13 @@ const AddItemScreen = () => {
         <Text style={styles.buttonText}>{string.addItem.selectImage}</Text>
       </TouchableOpacity>
 
-      <ScrollView
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 20 }}
-      >
-        {image?.map((uri, index) => (
-          <Image
-            key={index}
-            source={{ uri: String(uri) }}
-            style={styles.preview}
-          />
-        ))}
-      </ScrollView>
+      {image && (
+        <Image
+          source={{ uri: image }}
+          resizeMode="cover"
+          style={styles.selectedImage}
+        />
+      )}
 
       <TouchableOpacity
         onPress={handleAddProduct}
@@ -163,6 +159,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  selectedImage: { height: 100, width: 100, marginTop: 20 },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
