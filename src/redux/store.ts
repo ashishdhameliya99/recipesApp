@@ -1,12 +1,17 @@
 import recipesSlice from './recipesSlice';
-import { useDispatch } from 'react-redux';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import { recipesSaga } from './saga';
+import { userReducer } from './thunk/reducer';
+import { cartsReducer } from './thunkAPI/reducer';
 
 const sagaMiddleware = createSagaMiddleware();
 
-const rootReducer = combineReducers({ recipes: recipesSlice });
+const rootReducer = combineReducers({
+  recipes: recipesSlice,
+  apiReducer: userReducer,
+  apiCarts: cartsReducer,
+});
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -16,6 +21,4 @@ export const store = configureStore({
 
 sagaMiddleware.run(recipesSaga);
 
-export type AppDispatch = typeof store.dispatch;
-export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export type RootState = ReturnType<typeof store.getState>;
