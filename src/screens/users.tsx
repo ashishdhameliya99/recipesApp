@@ -11,11 +11,12 @@ import {
 import { useSelector } from 'react-redux';
 import { localRecipesType } from '../utils/globalType';
 import { fetchUsers } from '../redux/thunk/thunkAction';
-import { RootState, useAppDispatch } from '../redux/store';
+import { RootState } from '../redux/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAppDispatch } from '../utils/reduxUtil';
 
 const Users = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();

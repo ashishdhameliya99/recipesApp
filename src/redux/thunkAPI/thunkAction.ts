@@ -22,7 +22,7 @@ export const fetchData = (page: number = 1, limit: number = 10) => {
       const allProducts: localCartsType[] = response.data.carts.flatMap(
         (cart: any) => cart.products,
       );
-
+      console.log('api-=', allProducts);
       dispatch(fetchCartDataSuccess(allProducts));
     } catch (error: any) {
       dispatch(fetchCartDataFailure(error.message));

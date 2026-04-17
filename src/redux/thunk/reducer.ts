@@ -5,8 +5,14 @@ const initialState: UserState = {
   users: [],
   error: '',
 };
-
-export const userReducer = (state = initialState, action: any): UserState => {
+type UserAction =
+  | { type: typeof UserActionTypes.FETCH_REQUEST }
+  | { type: typeof UserActionTypes.FETCH_SUCCESS; payload: any[] }
+  | { type: typeof UserActionTypes.FETCH_FAILURE; payload: string };
+export const userReducer = (
+  state = initialState,
+  action: UserAction,
+): UserState => {
   switch (action.type) {
     case UserActionTypes.FETCH_REQUEST:
       return { ...state, loading: true };

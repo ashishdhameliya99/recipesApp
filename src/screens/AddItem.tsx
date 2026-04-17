@@ -84,6 +84,9 @@ const AddItemScreen = () => {
       </Text>
       <Text onPress={() => navigation.navigate(routes.users)}>User Data</Text>
       <Text onPress={() => navigation.navigate(routes.carts)}>Carts Data</Text>
+      <Text onPress={() => navigation.navigate(routes.video)}>
+        Video Download
+      </Text>
       <Text style={[styles.label, { textAlign: 'center' }]}>
         {string.addItem.title}
       </Text>

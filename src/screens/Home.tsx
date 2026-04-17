@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  ImageSourcePropType,
   ListRenderItem,
   StyleSheet,
   Text,
@@ -12,7 +11,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RootState, useAppDispatch } from '../redux/store';
+import { RootState } from '../redux/store';
 import { fetchRecipesRequest } from '../redux/recipesSlice';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
@@ -25,6 +24,7 @@ import { routes } from '../constants/routes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
 import { ActionItem } from '../utils/globalType';
+import { useAppDispatch } from '../utils/reduxUtil';
 
 export default function Home() {
   const [products, setProducts] = useState<ActionItem[]>([]);
@@ -65,17 +65,10 @@ export default function Home() {
     }, []),
   );
   const mergedData = [...products, ...data];
-  console.log('all data=====', mergedData);
   const renderItem: ListRenderItem<ActionItem> = ({ item }) => {
-    const imageSource =
-      typeof item?.image === 'string' &&
-      (item.image.startsWith('http') || item.image.startsWith('https'))
-        ? { uri: item.image }
-        : (item.image as ImageSourcePropType);
-
     return (
       <TouchableOpacity style={styles.cardVertical}>
-        <Image source={imageSource} style={styles.image} />
+        <Image source={{ uri: item.image }} style={styles.image} />
         <View style={styles.titleRow}>
           <Text numberOfLines={1} style={styles.title}>
             {item?.name}

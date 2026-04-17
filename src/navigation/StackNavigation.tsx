@@ -4,6 +4,7 @@ import AllTags from '../screens/AllTags';
 import AddItem from '../screens/AddItem';
 import Users from '../screens/users';
 import Carts from '../screens/Carts';
+import VideoDownloader from '../screens/Video';
 
 const Stack = createStackNavigator();
 const HomeStack = () => {
@@ -14,6 +15,7 @@ const HomeStack = () => {
       <Stack.Screen name="AddItem" component={AddItem} />
       <Stack.Screen name="Users" component={Users} />
       <Stack.Screen name="Carts" component={Carts} />
+      <Stack.Screen name="Video" component={VideoDownloader} />
     </Stack.Navigator>
   );
 };

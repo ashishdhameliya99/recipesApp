@@ -5,8 +5,15 @@ const initialState: CartsState = {
   carts: [],
   error: '',
 };
+type CartAction =
+  | { type: typeof CartActionTypes.FETCH_REQUEST }
+  | { type: typeof CartActionTypes.FETCH_SUCCESS; payload: any[] }
+  | { type: typeof CartActionTypes.FETCH_FAILURE; payload: string };
 
-export const cartsReducer = (state = initialState, action: any): CartsState => {
+export const cartsReducer = (
+  state = initialState,
+  action: CartAction,
+): CartsState => {
   switch (action.type) {
     case CartActionTypes.FETCH_REQUEST:
       return { ...state, loading: true };

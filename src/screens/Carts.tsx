@@ -12,10 +12,11 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../redux/store';
+import { RootState } from '../redux/store';
 import { localCartsType } from '../utils/globalType';
 import { RFont, RHeight, RWidth } from '../constants/responsiveUI';
 import { fetchData } from '../redux/thunkAPI/thunkAction';
+import { useAppDispatch } from '../utils/reduxUtil';
 
 const Users = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -24,7 +25,7 @@ const Users = () => {
   const { carts, loading, error } = useSelector(
     (state: RootState) => state.apiCarts,
   );
-
+  console.log('all cartd data======-------', carts);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
