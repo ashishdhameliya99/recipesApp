@@ -25,7 +25,6 @@ const Users = () => {
   const { carts, loading, error } = useSelector(
     (state: RootState) => state.apiCarts,
   );
-  console.log('all cartd data======-------', carts);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -47,7 +46,7 @@ const Users = () => {
         <Text numberOfLines={1} style={styles.title}>
           {item?.title}
         </Text>
-        <Text style={styles.price}>{(item.total ?? 0).toFixed(2)}</Text>
+        <Text style={styles.price}>{(item?.total ?? 0).toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );

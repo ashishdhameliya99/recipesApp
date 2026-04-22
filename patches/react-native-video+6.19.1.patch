@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-video/src/Video.tsx b/node_modules/react-native-video/src/Video.tsx
+index 82b73ab..9b70091 100644
+--- a/node_modules/react-native-video/src/Video.tsx
++++ b/node_modules/react-native-video/src/Video.tsx
+@@ -814,7 +814,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
+ 
+       // poster style
+       const baseStyle: StyleProp<ImageStyle> = {
+-        ...StyleSheet.absoluteFillObject,
++        ...StyleSheet.absoluteFill,
+         resizeMode: _posterResizeMode,
+       };
+ 
+@@ -867,7 +867,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
+ 
+     const _style: StyleProp<ViewStyle> = useMemo(
+       () => ({
+-        ...StyleSheet.absoluteFillObject,
++        ...StyleSheet.absoluteFill,
+       }),
+       [],
+     );
