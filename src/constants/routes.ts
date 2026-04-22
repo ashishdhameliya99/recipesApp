@@ -3,4 +3,8 @@ export const routes = {
   users: 'Users',
   carts: 'Carts',
   video: 'Video',
+  graph: 'Graph',
+  line: 'Line',
+  progress: 'Progress',
+  barChart: 'BarChart',
 };

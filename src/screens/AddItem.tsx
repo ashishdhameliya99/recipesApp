@@ -87,6 +87,14 @@ const AddItemScreen = () => {
       <Text onPress={() => navigation.navigate(routes.video)}>
         Video Download
       </Text>
+      <Text onPress={() => navigation.navigate(routes.graph)}>Pie chart</Text>
+      <Text onPress={() => navigation.navigate(routes.line)}>Line chart</Text>
+      <Text onPress={() => navigation.navigate(routes.progress)}>
+        progress chart
+      </Text>
+      <Text onPress={() => navigation.navigate(routes.barChart)}>
+        bar chart
+      </Text>
       <Text style={[styles.label, { textAlign: 'center' }]}>
         {string.addItem.title}
       </Text>
